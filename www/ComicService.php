@@ -43,6 +43,8 @@ function getFileList($path)
             $jsonfiles[] = $files[$i];
         }
     }
+    natcasesort($jsonfiles);
+    $jsonfiles = array_values($jsonfiles);
     return $jsonfiles;
 }
 

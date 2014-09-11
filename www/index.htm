@@ -16,6 +16,7 @@
 		{
 			for (var i = 0; i < books.length; i++)
 			{
+				$("#books").append("<div id='book" + i + "'></div>");
 				(function(){
 					var booknum = i;
 					$.ajax({
@@ -29,7 +30,7 @@
 					{
 						comics[booknum] = pages;
 						comics[booknum].unshift(books[booknum]);
-						$("#books").append("<div><img id='" + booknum + "' src='ComicService.php?action=image&comic=" + books[booknum] + "&page=" + pages[1] + "' width='150'><div class='title'><a href='" + encodeURIComponent(books[booknum]) + "'>" + books[booknum].substring(0, books[booknum].length - 4) + "</a></div></div>");
+						$("#book" + booknum).html("<img id='" + booknum + "' src='ComicService.php?action=image&comic=" + books[booknum] + "&page=" + pages[1] + "' width='150'><div class='title'><a href='" + encodeURIComponent(books[booknum]) + "'>" + books[booknum].substring(0, books[booknum].length - 4) + "</a></div>");
 					});
 				})();
 			}
