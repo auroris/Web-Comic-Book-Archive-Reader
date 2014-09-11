@@ -1,5 +1,8 @@
 <?PHP
+// Development settings -- comment out the next three lines in production
 header('Access-Control-Allow-Origin: *'); // CORS All-Access
+error_reporting(E_ALL);
+ini_set('display_errors', 'on');
 
 /////////////////////////////////////////////////////////////////////////////////
 // Entry point for getting JSON
@@ -28,14 +31,14 @@ if ($_GET["action"] == "image")
 }
 
 /////////////////////////////////////////////////////////////////////////////////
-// Return an array of files in $path that are .cbz files
+// Return an array of files in $path that are archive files
 function getFileList($path)
 {
     $files = scandir($path);
     $jsonfiles = array();
     for ($i = 0; $i < count($files); $i++)
     {
-        if (endsWith($files[$i], ".cbz"))
+        if (endsWith($files[$i], ".cbz") || endsWith($files[$i], ".cbr"))
         {
             $jsonfiles[] = $files[$i];
         }
@@ -49,22 +52,46 @@ function getToC($archive)
 {
     $toc = array();
 
-    $zip = new ZipArchive();
-    if ($zip->open($archive))
+    if (endsWith($archive, ".cbz"))
     {
-        for ($i = 0; $i < $zip->numFiles; $i++)
+        $zip = new ZipArchive();
+        if ($zip->open($archive))
         {
-            if (endsWith($zip->getNameIndex($i), '.jpg') 
-                || endsWith($zip->getNameIndex($i), '.gif')
-                || endsWith($zip->getNameIndex($i), '.png'))
+            for ($i = 0; $i < $zip->numFiles; $i++)
             {
-                $toc[] = $zip->getNameIndex($i);
+                if (endsWith($zip->getNameIndex($i), '.jpg') 
+                    || endsWith($zip->getNameIndex($i), '.gif')
+                    || endsWith($zip->getNameIndex($i), '.png'))
+                {
+                    $toc[] = $zip->getNameIndex($i);
+                }
             }
-        }
 
-        natcasesort($toc);
-        $toc = array_values($toc);
-        $zip->close();
+            natcasesort($toc);
+            $toc = array_values($toc);
+            $zip->close();
+        }
+    }
+    else if (endsWith($archive, ".cbr"))
+    {
+        $rar = RarArchive::open($archive);
+        if ($rar !== false)
+        {
+            $rar_entries = $rar->getEntries();
+            for ($i = 0; $i < count($rar_entries); $i++)
+            {
+                if (endsWith($rar_entries[$i]->getName(), '.jpg') 
+                    || endsWith($rar_entries[$i]->getName(), '.gif')
+                    || endsWith($rar_entries[$i]->getName(), '.png'))
+                {
+                    $toc[] = $rar_entries[$i]->getName();
+                }
+            }
+
+            natcasesort($toc);
+            $toc = array_values($toc);
+            $rar->close();
+        }
     }
     
     return $toc;
@@ -75,6 +102,7 @@ function getToC($archive)
 // based on file type
 function passImage($archive, $page)
 {
+    // Local browser cache
     $lastModified=filemtime($archive);
     $etagFile = md5_file(__FILE__);
     $ifModifiedSince=(isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) ? $_SERVER['HTTP_IF_MODIFIED_SINCE'] : false);
@@ -90,25 +118,59 @@ function passImage($archive, $page)
         exit;
     }
 
-    $zip = new ZipArchive();
-    if ($zip->open($archive))
+    if (endsWith($archive, ".cbz"))
     {
-        if (endsWith($page, ".jpg"))
+        $zip = new ZipArchive();
+        if ($zip->open($archive))
         {
-            header('Content-type: image/jpeg');
-            fpassthru($zip->getStream($page));
+            if (endsWith($page, ".jpg"))
+            {
+                header('Content-type: image/jpeg');
+                fpassthru($zip->getStream($page));
+            }
+            else if (endsWith($page, ".png"))
+            {
+                header('Content-type: image/png');
+                fpassthru($zip->getStream($page));
+            }
+            else if (endsWith($page, ".gif"))
+            {
+                header('Content-type: image/gif');
+                fpassthru($zip->getStream($page));
+            }
+            $zip->close();
         }
-        else if (endsWith($page, ".png"))
+    }
+    else if (endsWith($archive, ".cbr"))
+    {
+        $rar = RarArchive::open($archive);
+        if ($rar !== false)
         {
-            header('Content-type: image/png');
-            fpassthru($zip->getStream($page));
+            $rar_entries = $rar->getEntries();
+            for ($i = 0; $i < count($rar_entries); $i++)
+            {
+                if ($rar_entries[$i]->getName() == $page)
+                {
+                    if (endsWith($page, ".jpg"))
+                    {
+                        header('Content-type: image/jpeg');
+                        fpassthru($rar_entries[$i]->getStream());
+                    }
+                    else if (endsWith($page, ".png"))
+                    {
+                        header('Content-type: image/png');
+                        fpassthru($rar_entries[$i]->getStream());
+                    }
+                    else if (endsWith($page, ".gif"))
+                    {
+                        header('Content-type: image/gif');
+                        fpassthru($rar_entries[$i]->getStream());
+                    }
+                    $rar->close();
+                    return;
+                }
+            }
         }
-        else if (endsWith($page, ".gif"))
-        {
-            header('Content-type: image/gif');
-            fpassthru($zip->getStream($page));
-        }
-        $zip->close();
     }
 }
 

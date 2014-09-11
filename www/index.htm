@@ -1,6 +1,6 @@
 <html>
 <head>
-	<title>Comics on Auroris.Net</title>
+	<title>Web Comic Book Archive Reader</title>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 	<script type="text/javascript">
 	var comics = {};
@@ -38,29 +38,29 @@
 		$("#books").on("click", "img", function() {
 			$("#books").fadeOut();
 			var content = new Array();
-			content.push("<div><a href='/comics/'>Back to Comics</a></div>");
+			content.push("<div><a href='javascript:window.location.href=window.location.href'>Back to Comics</a></div>");
 			for (var i = 1; i < comics[$(this).attr("id")].length; i ++)
 			{
 				content.push("<div><img src='ComicService.php?action=image&comic=" + comics[$(this).attr("id")][0] + "&page=" + comics[$(this).attr("id")][i] + "'></div>");
 			}
-			content.push("<div><a href='/comics/'>Back to Comics</a></div>");
+			content.push("<div><a href='javascript:window.location.href=window.location.href'>Back to Comics</a></div>");
 			$("#pages").html(content.join(''));
 		});
 	});
     </script>
     <style>
-    html, body { height: 100%; padding: 0px; margin: 0px; background-color: #eee;}
-    #books > div { float: left; position: relative; width: 200px; height: 275px; border: 1px solid #4577d4; border-radius: 3px; background-color: #6b90d4; margin: 5px; padding: 4px; cursor: default; text-align: center; }
-    #books div.title { position: absolute; bottom: 0px; padding-bottom: 3px; text-align: center; vertical-align: middle; width: 200px; height: 36px; }
-    #books div.title a { text-decoration: none; color: #000; cursor: pointer; }
-    #books img { cursor: pointer; }
-    #books > div:hover { border-color: #4577d4; background-color: #9bF094; }
-    #pages { width: 100%; }
-    #pages > div { text-align: center; margin: 10px; }
+		html, body { height: 100%; padding: 0px; margin: 0px; background-color: #eee;}
+		#books > div { float: left; position: relative; width: 200px; height: 275px; border: 1px solid #4577d4; border-radius: 3px; background-color: #6b90d4; margin: 5px; padding: 4px; cursor: default; text-align: center; }
+		#books div.title { position: absolute; bottom: 0px; padding-bottom: 3px; text-align: center; vertical-align: middle; width: 200px; height: 36px; }
+		#books div.title a { text-decoration: none; color: #000; cursor: pointer; }
+		#books img { cursor: pointer; }
+		#books > div:hover { border-color: #4577d4; background-color: #9bF094; }
+		#pages { width: 100%; }
+		#pages > div { text-align: center; margin: 10px; }
     </style>
 </head>
 <body>
-<div id="books"><div><h1>Comics</h1>Click the image to read online. Click the title to download the cbz file.</div></div>
+<div id="books"><div><h1>Comics</h1>Click the image to read online. Click the title to download the archive file file.</div></div>
 <div id="pages"></div>
 </body>
 </html>
